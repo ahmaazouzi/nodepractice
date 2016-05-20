@@ -1,35 +1,66 @@
 var express = require('express');
+var bodyParser = require('body-parser');
 var router = express.Router();
+var mongoose = require("mongoose");
 
-/* GET home page. */
-// router.get('/', function(req, res, next) {
-//   res.render('index', { title: 'Express' });
-// });
+
+var Dishes = require('../models/dishes1');
+
+router.use(bodyParser.json());
+
 
 router.route('/')
-.all(function(req, res, next){
-	res.writeHead(200, {'Cntent-Type':'text/plain'}); //this is chained to the route'/'
-	next();
-})
 .get(function(req, res, next){
-	res.end('Will send all the dishes to you!!!');
+	Dishes.find({}, function(err, dish){
+		if (err) throw err;
+		res.json(dish);
+	});
 }) //all these methods are chained together with no ; at the end of it
+
 .post(function(req, res, next){
-	res.end('Will add the dish: ' + req.body.name + ' with details: ' + req.body.description);
+	Dishes.create(req.body, function(err, dish){
+		if (err) throw err;
+		console.log('Dish created!!!');
+		var id = dish._id;
+		res.writeHead(200, {
+			'Content-Type': 'text/plain'
+		});
+		res.end('Added dish with id: ' + id);
+	});
 })
+
 .delete(function(req, res, next){
-	res.end('I will delete all the dishes');
+	Dishes.remove({}, function(err, resp){
+		if (err) throw err;
+		res.json(resp);
+	});
 });
+
+//parameterized interaction with mongodb
 router.route('/:dishId')
-.all(function(req, res, next){
-	res.writeHead(200, {'Cntent-Type':'text/plain'}); //this is chained to the route'/'
-	next();
-})
 .get(function(req, res, next){
-	res.end('Will send details of the dish: ' + req.params.dishId + ' to you!!!');
+	Dishes.findById(req.params.dishId, function(err, dish){
+		if (err) throw err;
+		res.json(dish);
+	});
 })
-.post(function(req, res, next){
-	res.end('I have added details of the dish: ' + req.params.dishId + ' to you!!!');
+
+.put(function(req, res, next){
+	Dishes.findByIdAndUpdate(req.params.dishId, {
+		$set: req.body
+	}, {
+		new: true
+	}, function(err, dish){
+		if (err) throw err;
+		res.json(dish);
+	});
+})
+
+.delete(function(req, res, next){
+	Dishes.remove(req.params.dishId, function(err, resp){
+		if (err) throw err;
+		res.json(resp);
+	});
 });
 
 module.exports = router;
