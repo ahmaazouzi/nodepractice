@@ -51,7 +51,6 @@ var dishSchema = new Schema({
 	{
 		timestamps: true,
 		comments: true,
-		zaza: true
 });
 
 //create model
